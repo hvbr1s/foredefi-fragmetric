@@ -10,20 +10,17 @@ export async function restake(fordefiConfig: FordefiSolanaConfig, fragmetricConf
     const vaultPubKey = kit.address(fordefiConfig.fordefiSolanaVaultAddress)
     const FragmetricSDK = await import('@fragmetric-labs/sdk');    
     try {
-        // Initialize the RestakingProgram for mainnet
         const { RestakingProgram } = FragmetricSDK as any;        
         const restaking =  await RestakingProgram.mainnet(solanaCluster);
 
-        // Resolve the restaking program to ensure it's properly initialized
         await restaking.resolve();
 
-        // Create a deposit transaction for SOL -> fragSOL
         const tx = await restaking.fragSOL
             .user(fordefiConfig.fordefiSolanaVaultAddress)
             .deposit.assemble(
                 {
-                    assetMint: null, // null means we're depositing SOL
-                    assetAmount: fragmetricConfig.restakeAmount, // Amount in lamports
+                    assetMint: fragmetricConfig.assetMint,
+                    assetAmount: fragmetricConfig.restakeAmount,
                     applyPresetComputeUnitLimit: true,
                 },
                 {
@@ -43,7 +40,7 @@ export async function restake(fordefiConfig: FordefiSolanaConfig, fragmetricConf
           );
         console.log("Tx message: ", txMessage)
         
-        const signedTx = await kit.partiallySignTransactionMessageWithSigners(txMessage)
+        const signedTx = await kit.partiallySignTransactionMessageWithSigners(txMessage);
         console.log("Signed transaction: ", signedTx)
 
         const base64EncodedData = Buffer.from(signedTx.messageBytes).toString('base64');
@@ -60,7 +57,7 @@ export async function restake(fordefiConfig: FordefiSolanaConfig, fragmetricConf
                 "data": base64EncodedData,
                 "chain": "solana_mainnet"
             },
-            "wait_for_state": "signed" // only for create-and-wait
+            "wait_for_state": "signed"
         };
     
         return jsonBody;

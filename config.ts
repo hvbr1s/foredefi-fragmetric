@@ -12,7 +12,8 @@ export interface FordefiSolanaConfig {
 };
 
 export interface FragmetricConfig {
-  restakeAmount: bigint
+  restakeAmount: bigint,
+  assetMint: string | null
 };
 
 export const fordefiConfig: FordefiSolanaConfig = {
@@ -25,6 +26,7 @@ export const fordefiConfig: FordefiSolanaConfig = {
 
 export const fragmetricConfig: FragmetricConfig = {
   restakeAmount: 100n, // in lamports
+  assetMint: null      // null means we're restaking SOL for fragSOL
 };
 
 export const solanaCluster = 'https://api.mainnet-beta.solana.com';
