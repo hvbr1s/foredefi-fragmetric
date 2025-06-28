@@ -1,8 +1,7 @@
-import { signWithApiSigner } from './utils/signer';
+import { fordefiConfig, fragmetricConfig } from './config';
 import { signWithFordefi } from './utils/process_tx'
+import { signWithApiSigner } from './utils/signer';
 import { restake } from './serialize_restaking'
-import { fordefiConfig, solanaCluster, fragmetricConfig } from './config';
-import { Connection, clusterApiUrl } from '@solana/web3.js';
 
 async function main(): Promise<void> {
   if (!fordefiConfig.accessToken) {
@@ -10,11 +9,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  // Connect to Solana cluster
-  let connection = new Connection(clusterApiUrl(solanaCluster as any), "confirmed");
-
   // We create the tx
-  const jsonBody = await restake(fordefiConfig, fragmetricConfig, connection)
+  const jsonBody = await restake(fordefiConfig, fragmetricConfig)
   console.log("JSON request: ", jsonBody)
 
   // Fetch serialized tx from json file

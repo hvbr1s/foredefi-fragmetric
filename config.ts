@@ -12,7 +12,6 @@ export interface FordefiSolanaConfig {
 };
 
 export interface FragmetricConfig {
-  market: string;
   restakeAmount: bigint
 };
 
@@ -25,8 +24,7 @@ export const fordefiConfig: FordefiSolanaConfig = {
 };
 
 export const fragmetricConfig: FragmetricConfig = {
-  market: "EJ4GPTCnNtemBVrT7QKhRfSKfM53aV2UJYGAC8gdVz5b", // fragSOL market, you can find more markets at https://web-api.exponent.finance/api/markets
-  restakeAmount: 100n, // in smallest fragSOL units (9 decimals -> https://solscan.io/token/FRAGSEthVFL7fdqM8hxfxkfCZzUvmg21cqPJVvC1qdbo)
+  restakeAmount: 100n, // in lamports
 };
 
-export const solanaCluster: "mainnet-beta" | "testnet" | "devnet" = "mainnet-beta"
+export const solanaCluster = 'https://api.mainnet-beta.solana.com';

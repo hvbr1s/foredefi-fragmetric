@@ -1,26 +1,24 @@
-import { Connection } from "@solana/web3.js";
+// import { Connection } from "@solana/web3.js";
 import { FordefiSolanaConfig, FragmetricConfig } from "./config";
-import { createKeyPairSignerFromBytes } from '@solana/kit';
+import { solanaCluster } from './config'
+import * as kit from '@solana/kit';
 
-export async function restake(fordefiConfig: FordefiSolanaConfig, fragmetricConfig: FragmetricConfig, connection: Connection) {
+const mainnetRpc = kit.createSolanaRpc(solanaCluster);
 
+export async function restake(fordefiConfig: FordefiSolanaConfig, fragmetricConfig: FragmetricConfig) {
+
+    const vaultPubKey = kit.address(fordefiConfig.fordefiSolanaVaultAddress)
     const FragmetricSDK = await import('@fragmetric-labs/sdk');    
     try {
-        // Try to find RestakingProgram in the exports
-        const { RestakingProgram } = FragmetricSDK as any;
-        
-        if (!RestakingProgram) {
-            throw new Error("RestakingProgram not found in exports");
-        }
-        
         // Initialize the RestakingProgram for mainnet
-        const restaking = RestakingProgram.mainnet(connection.rpcEndpoint);
+        const { RestakingProgram } = FragmetricSDK as any;        
+        const restaking =  await RestakingProgram.mainnet(solanaCluster);
 
         // Resolve the restaking program to ensure it's properly initialized
         await restaking.resolve();
 
         // Create a deposit transaction for SOL -> fragSOL
-        const depositTx = await restaking.fragSOL
+        const tx = await restaking.fragSOL
             .user(fordefiConfig.fordefiSolanaVaultAddress)
             .deposit.assemble(
                 {
@@ -33,28 +31,39 @@ export async function restake(fordefiConfig: FordefiSolanaConfig, fragmetricConf
                 }
             );
 
-        console.log("Deposit transaction assembled:", depositTx);
+        console.log("Deposit transaction assembled:", tx);
 
-        // return {
-        //     chainId: "solana:mainnet",
-        //     type: "solana_transaction",
-        //     details: {
-        //         type: "fragmetric_restaking",
-        //         description: `Restake ${fragmetricConfig.restakeAmount} lamports of SOL for fragSOL`,
-        //         assetSymbol: "SOL",
-        //         assetAmount: fragmetricConfig.restakeAmount.toString(),
-        //         market: fragmetricConfig.market,
-        //     },
-        //     transaction: {
-        //         serializedTransaction: Buffer.from(depositTx.messageBytes).toString('base64'),
-        //         instructions: depositTx.instructions?.map((ix: any) => ({
-        //             programId: ix.programId,
-        //             accounts: ix.accounts,
-        //             data: ix.data ? Buffer.from(ix.data).toString('base64') : null,
-        //         })) || [],
-        //     },
-        //     vaultId: fordefiConfig.vaultId,
-        // };
+        const { value: latestBlockhash } = await mainnetRpc.getLatestBlockhash().send();
+
+        const txMessage = kit.pipe(
+            kit.createTransactionMessage({ version: 0 }),
+            message => kit.setTransactionMessageFeePayer(vaultPubKey, message),
+            message => kit.setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, message),
+            message => kit.appendTransactionMessageInstructions(tx.instructions, message)
+          );
+        console.log("Tx message: ", txMessage)
+        
+        const signedTx = await kit.partiallySignTransactionMessageWithSigners(txMessage)
+        console.log("Signed transaction: ", signedTx)
+
+        const base64EncodedData = Buffer.from(signedTx.messageBytes).toString('base64');
+        console.debug("Raw data ->", base64EncodedData)
+        
+        const jsonBody = {
+            "vault_id": fordefiConfig.vaultId,
+            "signer_type": "api_signer",
+            "sign_mode": "auto",
+            "type": "solana_transaction",
+            "details": {
+                "type": "solana_serialized_transaction_message",
+                "push_mode": "auto",
+                "data": base64EncodedData,
+                "chain": "solana_mainnet"
+            },
+            "wait_for_state": "signed" // only for create-and-wait
+        };
+    
+        return jsonBody;
 
     } catch (error) {
         console.error("Error creating restaking transaction:", error);
