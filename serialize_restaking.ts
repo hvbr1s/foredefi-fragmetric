@@ -1,4 +1,3 @@
-// import { Connection } from "@solana/web3.js";
 import { FordefiSolanaConfig, FragmetricConfig } from "./config";
 import { solanaCluster } from './config'
 import * as kit from '@solana/kit';
