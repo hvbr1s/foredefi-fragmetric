@@ -24,7 +24,7 @@ export const fordefiConfig: FordefiSolanaConfig = {
   apiPathEndpoint: '/api/v1/transactions/create-and-wait'
 };
 
-export const exponentConfig: FragmetricConfig = {
+export const fragmetricConfig: FragmetricConfig = {
   market: "EJ4GPTCnNtemBVrT7QKhRfSKfM53aV2UJYGAC8gdVz5b", // fragSOL market, you can find more markets at https://web-api.exponent.finance/api/markets
   restakeAmount: 100n, // in smallest fragSOL units (9 decimals -> https://solscan.io/token/FRAGSEthVFL7fdqM8hxfxkfCZzUvmg21cqPJVvC1qdbo)
 };
