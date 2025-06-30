@@ -9,7 +9,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  // We create the tx
+  // Create and serialize the tx
   const jsonBody = await restake(fordefiConfig, fragmetricConfig)
   console.log("JSON request: ", jsonBody)
 

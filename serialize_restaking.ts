@@ -5,7 +5,6 @@ import * as kit from '@solana/kit';
 const mainnetRpc = kit.createSolanaRpc(solanaCluster);
 
 export async function restake(fordefiConfig: FordefiSolanaConfig, fragmetricConfig: FragmetricConfig) {
-
     const vaultPubKey = kit.address(fordefiConfig.fordefiSolanaVaultAddress)
     const FragmetricSDK = await import('@fragmetric-labs/sdk');    
     try {
@@ -43,7 +42,6 @@ export async function restake(fordefiConfig: FordefiSolanaConfig, fragmetricConf
         console.log("Signed transaction: ", signedTx)
 
         const base64EncodedData = Buffer.from(signedTx.messageBytes).toString('base64');
-        console.debug("Raw data ->", base64EncodedData)
         
         const jsonBody = {
             "vault_id": fordefiConfig.vaultId,
